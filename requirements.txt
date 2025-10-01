@@ -1,0 +1,6 @@
+pyqt5
+autopep8
+astor
+transformers
+torch
+reportlab

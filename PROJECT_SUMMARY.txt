@@ -1,0 +1,66 @@
+AI Code Linter — Project Summary
+
+Purpose
+- Semester project: a lightweight AI-assisted code linter and quick-fix tool focused on Python.
+
+What was implemented (high level)
+- PyQt5 GUI (`ui/main_ui.py`) with editor, analysis report pane, suggestions list, and Quick Fix action.
+- Rule-based Python analyzer (`linter.py`) that:
+  - Detects syntax errors via AST and reports line numbers.
+  - Flags unused variables, magic numbers, suspicious calls (eval/exec), and possible hard-coded credentials.
+  - Uses `autopep8` for optional auto-formatting (skippable if not installed).
+  - Returns structured output: (report_text, fixed_code, highlight_lines, applied_fixes).
+  - Detects non-Python input (Java/C/C++) and skips fixes to avoid mangling other languages.
+  - Performs a conservative interprocedural check for division-by-zero when a function is called with literal 0; offers and can insert a guard when `auto_fix=True`.
+- Conservative deterministic fixer (`fixer.py`) that implements safe text/AST transforms:
+  - Off-by-one fixes: `range(len(x) + 1)` -> `range(len(x))`.
+  - Convert simple index-based loops to element loops (best-effort).
+  - Replace `== None` / `!= None` with `is None` / `is not None`.
+  - Attempt small syntax repairs (insert missing colons in block headers) if they parse afterwards.
+- Model stub (`models/codebert_stub.py`) prepared for later integration (lazy loader; placeholder predictions).
+- Test harnesses:
+  - `test_linter.py` — quick end-to-end tests for analyzer behavior.
+  - `run_fixer_tests.py` — unit-style tests for fixer rules.
+- Project documentation and dependencies:
+  - `README.md` (usage notes and dependencies)
+  - `requirements.txt` (recommended packages; large ML deps optional)
+
+Files changed/created (high level)
+- `ui/main_ui.py` — main GUI and Quick Fix wiring
+- `linter.py` — AST-based analyzer, non-Python detection, optional autopep8, divisor-guard detection + fix
+- `fixer.py` — consolidated conservative fixer implementation
+- `models/codebert_stub.py` — placeholder model loader
+- `test_linter.py`, `run_fixer_tests.py` — test scripts
+- `PROJECT_SUMMARY.txt` — this file
+
+How to run (Windows / PowerShell)
+- Create virtual environment (recommended):
+  python -m venv .venv
+  .\.venv\Scripts\Activate.ps1
+- Install minimal dev deps:
+  pip install PyQt5
+- Optional (for auto-formatting and advanced features):
+  pip install autopep8
+- Run the GUI app:
+  python main.py
+- Run tests (quick):
+  python test_linter.py
+  python run_fixer_tests.py
+
+Limitations and known issues
+- Fixers are intentionally conservative. They target common, low-risk patterns only.
+- Model-based repair (CodeBERT) is not implemented; `models/codebert_stub.py` is a placeholder.
+- Interprocedural checks are simple: only positional arguments and literal zeros are recognized.
+- The guard inserted for division-by-zero returns `None` (safe default). You may want to change to raising a specific error.
+- Not production hardened: no threading for long model inferences, minimal I/O sanitization.
+
+Recommended next steps
+- Add per-fix accept/reject UI controls so fixes aren't applied blindly.
+- Improve guard insertion to respect docstrings and function body placement.
+- Add unit tests for each fixer rule and integrate with a CI runner (GitHub Actions).
+- Optional: integrate a trained repair model (CodeBERT / seq2seq) for more complex fixes.
+
+Contact / Notes
+- Files are in the repository root and `ui/` and `models/` folders.
+- If you want, I can also create a short PDF summary or an ODT file for submission.
+
